@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+    http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd" default-autowire="byName">
+
+    <import resource="classpath*:META-INF/cxf/cxf.xml" />
+    <import resource="classpath*:META-INF/cxf/cxf-servlet.xml" />
+
+    <!--下面的class属性值一定要跟你项目中服务实现类的包路径完全一致 -->
+    <!-- 登录拦截器 -->
+    <!--<bean id="login" class="com.demo.Interceptor.LoginInInterceptor" />-->
+    <!-- 异常统一处理 -->
+    <bean id="exceptionMapper" class="com.demo.Interceptor.DemoExceptionMapper" />
+    <!-- Feature 可捆绑多个拦截器 -->
+    <bean id="exceptionHandle" class="com.demo.Interceptor.DemoWSFeature" />
+    <!-- 发布soap services-->
+    <jaxws:server id="soapService" serviceClass="com.demo.webservice.RsWebServiceImpl" address="/soapService">
+        <jaxws:features>
+            <ref bean="exceptionHandle" />
+        </jaxws:features>
+    </jaxws:server>
+
+    <!-- 发布restful services-->
+    <jaxrs:server id="rsServices" address="/rsServices">
+        <jaxrs:extensionMappings>
+            <entry key="json" value="application/json" />
+            <entry key="xml" value="application/xml" />
+        </jaxrs:extensionMappings>
+
+        <jaxrs:serviceBeans>
+            <bean class="com.demo.webservice.RsWebServiceImpl">
+            </bean>
+        </jaxrs:serviceBeans>
+        <jaxrs:features>
+            <ref bean="exceptionHandle" />
+        </jaxrs:features>
+        <jaxrs:providers>
+            <!--<ref bean="login" 即可在此配置,也可在features中绑定 />-->
+            <ref bean="exceptionMapper" />
+        </jaxrs:providers>
+    </jaxrs:server>
+
+</beans>
